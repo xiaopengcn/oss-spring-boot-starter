@@ -1,4 +1,4 @@
-package cn.cloudscope.bean;
+package cn.cloudscope.oss.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

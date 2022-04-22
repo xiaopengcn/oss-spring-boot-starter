@@ -7,7 +7,7 @@
  * @Copyright: 云科凯创@2017
 */
 
-package cn.cloudscope.utils;
+package cn.cloudscope.oss.utils;
 
 import lombok.extern.slf4j.Slf4j;
 

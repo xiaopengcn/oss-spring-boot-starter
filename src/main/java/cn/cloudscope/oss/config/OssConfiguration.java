@@ -1,8 +1,8 @@
-package cn.cloudscope.config;
+package cn.cloudscope.oss.config;
 
-import cn.cloudscope.config.properties.OssProperties;
-import cn.cloudscope.service.Impl.AliyunOSSWorker;
-import cn.cloudscope.service.StorageWorker;
+import cn.cloudscope.oss.config.properties.OssProperties;
+import cn.cloudscope.oss.service.StorageWorker;
+import cn.cloudscope.oss.service.impl.AliyunOSSWorker;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSClientBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,7 +25,7 @@ import javax.annotation.Resource;
  */
 @ConditionalOnMissingBean(StorageWorker.class)
 @Import(OssProperties.class)
-@ConditionalOnProperty(prefix = "yk.storage", name = "provider", havingValue = "aliyun" , matchIfMissing = true)
+@ConditionalOnProperty(prefix = "oss.storage", name = "provider", havingValue = "aliyun" , matchIfMissing = true)
 public class OssConfiguration {
 
     @Resource

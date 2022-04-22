@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-      cn.cloudscope.config.StorageAutoConfiguration
+      cn.cloudscope.oss.config.StorageAutoConfiguration

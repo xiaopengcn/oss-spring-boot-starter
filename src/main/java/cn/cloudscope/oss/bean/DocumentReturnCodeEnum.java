@@ -1,4 +1,4 @@
-package cn.cloudscope.bean;
+package cn.cloudscope.oss.bean;
 
 import lombok.AllArgsConstructor;
 
@@ -17,7 +17,8 @@ import lombok.AllArgsConstructor;
 public enum DocumentReturnCodeEnum {
 
 	/** explain as msg */
-	SERVER_UNAVAILABLE(6001, "文件服务不可用，请联系支持部门。"),
+	SERVER_UNAVAILABLE(6000, "文件服务不可用，请联系支持部门。"),
+	BACKUP_FAILED(6001, "无法备份文件。"),
 	DOCUMENT_EMPTY(6101, "空文件，请重新上传。"),
 	;
 

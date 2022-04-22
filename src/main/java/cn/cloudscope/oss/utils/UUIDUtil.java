@@ -1,4 +1,4 @@
-package cn.cloudscope.utils;
+package cn.cloudscope.oss.utils;
 
 import java.util.UUID;
 

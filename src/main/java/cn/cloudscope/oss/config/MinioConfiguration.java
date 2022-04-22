@@ -1,9 +1,9 @@
-package cn.cloudscope.config;
+package cn.cloudscope.oss.config;
 
 
-import cn.cloudscope.config.properties.MinioProperties;
-import cn.cloudscope.service.Impl.MinioWorker;
-import cn.cloudscope.service.StorageWorker;
+import cn.cloudscope.oss.config.properties.MinioProperties;
+import cn.cloudscope.oss.service.StorageWorker;
+import cn.cloudscope.oss.service.impl.MinioWorker;
 import io.minio.MinioClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
 import javax.annotation.Resource;
 
 /**
- * Description: TODO
+ * Description: minio配置
  *
  * @author wangkp
  * @date 2022/1/24 14:36
@@ -25,7 +25,7 @@ import javax.annotation.Resource;
  */
 @ConditionalOnMissingBean(StorageWorker.class)
 @Import(MinioProperties.class)
-@ConditionalOnProperty(prefix = "yk.storage", name = "provider", havingValue = "minio" , matchIfMissing = true)
+@ConditionalOnProperty(prefix = "oss.storage", name = "provider", havingValue = "minio" , matchIfMissing = true)
 public class MinioConfiguration {
 
     @Resource

@@ -1,53 +1,58 @@
 {
   "groups": [
     {
-      "name": "yk.storage",
-      "type": "cn.cloudscope.config.properties.CommonProperties",
-      "sourceType": "cn.cloudscope.config.properties.CommonProperties"
+      "name": "oss.storage",
+      "type": "cn.cloudscope.oss.config.properties.CommonProperties",
+      "sourceType": "cn.cloudscope.oss.config.properties.CommonProperties"
     }
   ],
   "properties": [
     {
-      "name": "yk.storage.access-key",
+      "name": "oss.storage.access-key",
       "type": "java.lang.String",
       "description": "编号",
-      "sourceType": "cn.cloudscope.config.properties.CommonProperties"
+      "sourceType": "cn.cloudscope.oss.config.properties.CommonProperties",
+      "defaultValue": "minioadmin"
     },
     {
-      "name": "yk.storage.bucket-name",
+      "name": "oss.storage.bucket-name",
       "type": "java.lang.String",
       "description": "应用名称",
-      "sourceType": "cn.cloudscope.config.properties.CommonProperties"
+      "sourceType": "cn.cloudscope.oss.config.properties.CommonProperties",
+      "defaultValue": "basic"
     },
     {
-      "name": "yk.storage.enabled",
+      "name": "oss.storage.enabled",
       "type": "java.lang.Boolean",
-      "description": "是否启用存储服务",
-      "sourceType": "cn.cloudscope.config.properties.CommonProperties"
+      "description": "是否启用",
+      "sourceType": "cn.cloudscope.oss.config.properties.CommonProperties",
+      "defaultValue": true
     },
     {
-      "name": "yk.storage.end-point",
+      "name": "oss.storage.end-point",
       "type": "java.lang.String",
       "description": "服务端上传链接",
-      "sourceType": "cn.cloudscope.config.properties.CommonProperties"
+      "sourceType": "cn.cloudscope.oss.config.properties.CommonProperties",
+      "defaultValue": "http:\/\/127.0.0.1:9000"
     },
     {
-      "name": "yk.storage.expires-in",
+      "name": "oss.storage.expires-in",
       "type": "java.time.Duration",
       "description": "默认链接过期时间(s)",
-      "sourceType": "cn.cloudscope.config.properties.CommonProperties"
+      "sourceType": "cn.cloudscope.oss.config.properties.CommonProperties"
     },
     {
-      "name": "yk.storage.provider",
-      "type": "cn.cloudscope.config.properties.CommonProperties$Provider",
+      "name": "oss.storage.provider",
+      "type": "cn.cloudscope.oss.config.properties.CommonProperties$Provider",
       "description": "存储方式（oss\/minio),无配置，默认为minio",
-      "sourceType": "cn.cloudscope.config.properties.CommonProperties"
+      "sourceType": "cn.cloudscope.oss.config.properties.CommonProperties"
     },
     {
-      "name": "yk.storage.secret-key",
+      "name": "oss.storage.secret-key",
       "type": "java.lang.String",
       "description": "密钥",
-      "sourceType": "cn.cloudscope.config.properties.CommonProperties"
+      "sourceType": "cn.cloudscope.oss.config.properties.CommonProperties",
+      "defaultValue": "minioadmin"
     }
   ],
   "hints": []

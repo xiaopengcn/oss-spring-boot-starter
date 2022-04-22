@@ -1,4 +1,4 @@
-package cn.cloudscope.config.properties;
+package cn.cloudscope.oss.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -17,7 +17,7 @@ import java.time.Duration;
  * </pre>
  */
 @Data
-@ConfigurationProperties(prefix = "yk.storage")
+@ConfigurationProperties(prefix = "oss.storage")
 public class CommonProperties {
 
     /** 是否启用 */

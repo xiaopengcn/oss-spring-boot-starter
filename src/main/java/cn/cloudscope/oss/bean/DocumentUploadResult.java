@@ -1,4 +1,4 @@
-package cn.cloudscope.bean;
+package cn.cloudscope.oss.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,4 +32,6 @@ public class DocumentUploadResult {
 	private String path;
 	/** 文件名后缀 */
 	private String suffix;
+
+	private String url;
 }

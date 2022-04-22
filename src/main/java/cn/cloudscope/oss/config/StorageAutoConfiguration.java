@@ -1,6 +1,6 @@
-package cn.cloudscope.config;
+package cn.cloudscope.oss.config;
 
-import cn.cloudscope.config.properties.CommonProperties;
+import cn.cloudscope.oss.config.properties.CommonProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @EnableConfigurationProperties(CommonProperties.class)
-@ConditionalOnProperty(prefix = "yk.storage", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "oss.storage", name = "enabled", havingValue = "true")
 @Import({MinioConfiguration.class, OssConfiguration.class})
 public class StorageAutoConfiguration {
 
