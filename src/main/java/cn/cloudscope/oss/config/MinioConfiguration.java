@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
 import javax.annotation.Resource;
 
 /**
- * Description: minio配置
+ *  minio配置
  *
  * @author wangkp
  * @date 2022/1/24 14:36

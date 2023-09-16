@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * Description: 上传结果
+ *  上传结果
  *
  * @author wangkp
  * @date 2022/1/25 11:07

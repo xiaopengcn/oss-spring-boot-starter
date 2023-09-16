@@ -51,7 +51,7 @@ import java.util.List;
 import static io.minio.ObjectWriteArgs.MIN_MULTIPART_SIZE;
 
 /**
- * Description:
+ * 
  * minio 上传工具
  *
  * @author wupanhua
@@ -311,7 +311,7 @@ public class MinioWorker implements StorageWorker {
 	}
 
 	/**
-	 * Description:
+	 * 
 	 * <创建一个指定有效期的图片访问链接>
 	 *
 	 * @param path   oss存储路径
@@ -352,7 +352,7 @@ public class MinioWorker implements StorageWorker {
 	}
 
 	/**
-	 * Description:
+	 * 
 	 * <创建一个指定有效期的数据访问链接>
 	 *
 	 * @param path   存储路径
@@ -383,7 +383,7 @@ public class MinioWorker implements StorageWorker {
 	}
 
 	/**
-	 * Description:根据路径删除文件
+	 * 根据路径删除文件
 	 * <>
 	 *
 	 * @param path 1

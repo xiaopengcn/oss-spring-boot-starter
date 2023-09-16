@@ -3,7 +3,7 @@ package cn.cloudscope.oss.bean;
 import lombok.AllArgsConstructor;
 
 /**
- * Description: 文档服务异常代码
+ *  文档服务异常代码
  *
  * @author wenxiaopeng
  * @date 2021/07/09 11:07

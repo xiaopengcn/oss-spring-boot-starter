@@ -42,12 +42,12 @@ import java.util.List;
 @Data
 @Slf4j
 @ConditionalOnBean(OssConfiguration.class)
-public class AliyunOSSWorker implements StorageWorker {
+public class AliyunWorker implements StorageWorker {
 
     private OSSClient ossClient;
     private OssProperties ossProperties;
 
-    public AliyunOSSWorker(OSSClient ossClient, OssProperties ossProperties) {
+    public AliyunWorker(OSSClient ossClient, OssProperties ossProperties) {
         this.ossClient = ossClient;
         this.ossProperties = ossProperties;
     }
@@ -203,8 +203,7 @@ public class AliyunOSSWorker implements StorageWorker {
 
 
     /**
-     * Description:根据路径删除文件
-     * <>
+     * 根据路径删除文件
      *
      * @param path 1
      * @return boolean
@@ -300,7 +299,7 @@ public class AliyunOSSWorker implements StorageWorker {
     @Override
     public UploadResult uploadMultipleFile(List<File> files) {
         try {
-            if (files == null || files.size() <= 0) {
+            if (files == null || files.isEmpty()) {
                 throw new RuntimeException(DocumentReturnCodeEnum.DOCUMENT_EMPTY.getMsg());
             }
             for (File file : files) {
@@ -314,7 +313,7 @@ public class AliyunOSSWorker implements StorageWorker {
     }
 
     /**
-     * Description:
+     * 
      * <创建一个指定有效期的数据访问链接>
      *
      * @param path   oss存储路径
@@ -332,7 +331,7 @@ public class AliyunOSSWorker implements StorageWorker {
     }
 
     /**
-     * Description:
+     * 
      * <创建一个指定有效期的图片访问链接>
      *
      * @param path   oss存储路径

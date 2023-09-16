@@ -5,6 +5,7 @@ import lombok.Data;
 /**
  * 上传文件后返回的结果
  * Created by wupanhua on 2018/9/11.
+ * @author xiaopeng
  */
 @Data
 public class UploadResult {

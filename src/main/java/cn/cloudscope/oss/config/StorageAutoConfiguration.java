@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * Description: 存储模块自动配置类
+ *  存储模块自动配置类
  *
  * @author wenxiaopeng
  * @date 2022/02/08 19:18

@@ -2,7 +2,7 @@ package cn.cloudscope.oss.config;
 
 import cn.cloudscope.oss.config.properties.OssProperties;
 import cn.cloudscope.oss.service.StorageWorker;
-import cn.cloudscope.oss.service.impl.AliyunOSSWorker;
+import cn.cloudscope.oss.service.impl.AliyunWorker;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSClientBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
 import javax.annotation.Resource;
 
 /**
- * Description: 项目配置类
+ *  项目配置类
  *
  * @author wupanhua
  * @date 2020-02-05 14:41
@@ -34,6 +34,6 @@ public class OssConfiguration {
     @Bean
     public StorageWorker aliyunOSSWorker(){
         OSSClient ossClient = (OSSClient) new OSSClientBuilder().build(ossProperties.getEndPoint(),ossProperties.getAccessKey(),ossProperties.getSecretKey());
-        return new AliyunOSSWorker(ossClient,ossProperties);
+        return new AliyunWorker(ossClient,ossProperties);
     }
 }

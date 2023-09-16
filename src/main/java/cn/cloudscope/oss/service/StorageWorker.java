@@ -106,6 +106,7 @@ public interface StorageWorker {
      * @author wenxiaopeng
      * @date 2022/7/27 16:17
      * @return  远程文件路径
+     * @throws IOException File Not Found
      * */
     default String doUpload(File file, String path) throws IOException {
         return doUpload(Files.newInputStream(file.toPath()), path, null);
@@ -169,12 +170,14 @@ public interface StorageWorker {
     }
 
     /**
-     * Description:
+     * 
      * <添加文件后缀>
      *
      * @param fileName 文件名（可以包含路径）
+     * @param suffix 要添加的文件后缀
      * @author wupanhua
      * @date 11:14 2020-03-03
+     * @return 添加后缀后的新文件名
      */
     default String appendSuffix(String fileName, String suffix) {
 
@@ -215,18 +218,18 @@ public interface StorageWorker {
      * @date 14:02 2022/7/5
      * @param originPath 文件前缀路径
      * @param deleteOrigin  是否删除原文件
+     * @return 备份后的文件路径
      **/
     String backupFile(String originPath, boolean deleteOrigin);
 
     /**
-     * Description:根据路径删除文件
-     * <>
+     * 根据路径删除文件
      * @author songcx
      * @date 14:31 2021/2/2
      * @param path 1
      * @return boolean
      **/
-    boolean deleteFile(String path) throws Exception;
+    boolean deleteFile(String path);
 
 
     /**
@@ -242,26 +245,24 @@ public interface StorageWorker {
 
     /**
      * 上传多个文件
-     * @param files
+     * @param files 待上传文件列表
      * @return 上传文件成功后的结果集
      * @author wupanhua
      */
     UploadResult uploadMultipleFile(List<File> files);
 
     /**
-     * Description:
      * <创建一个指定有效期的数据访问链接>
      * @author wupanhua
      * @date 11:30 2020-03-03
      * @param path oss存储路径
      * @param expire 有效时间（s）
-     * @exception Exception 文件创建异常
-     * @return void
+     * @return 签名后的路径，可直接访问
      */
     String crateFileExpireUrl(String path, int expire);
 
     /**
-     * Description:
+     * 
      * <创建一个指定有效期的图片访问链接>
      * @author wupanhua
      * @date 11:30 2020-03-03
@@ -271,6 +272,13 @@ public interface StorageWorker {
      */
     UploadResult createImgExpireUrl(String path, int expire);
 
+    /**
+     * 按规则生成文件路径（年月及文件名hash）
+     * @param fileName  文件名
+     * @author wenxiaopeng
+     * @date 2023/9/16 14:45
+     * @return java.lang.String
+     **/
     default String generatePath(String fileName) {
         return LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM")) + "/" + PathUtil.generatePath(fileName) + "/" + fileName;
     }

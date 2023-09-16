@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Description: 文件工具类
+ *  文件工具类
  *
  * @author wenxiaopeng
  * @date 2022/7/26 18:01

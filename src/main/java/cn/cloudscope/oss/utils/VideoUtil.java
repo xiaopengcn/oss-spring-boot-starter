@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Description: 视频工具
+ *  视频工具
  *
  * @author wenxiaopeng
  * @date 2022/7/26 17:48

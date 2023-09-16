@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 
 /**
- * Description: 生成散列路径
+ *  生成散列路径
  *
  * @author wupanhua
  * @date 2019/8/6 15:28
@@ -32,7 +32,7 @@ public class PathUtil {
 	}
 
 	/**
-	 * Description:
+	 * 
 	 * <无法补充>
 	 * @author wupanhua
 	 * @date 15:39 2019/8/8
@@ -59,7 +59,7 @@ public class PathUtil {
 	}
 
 	/**
-	 * Description:
+	 * 
 	 * <无法补充>
 	 * @author wupanhua
 	 * @date 15:40 2019/8/8

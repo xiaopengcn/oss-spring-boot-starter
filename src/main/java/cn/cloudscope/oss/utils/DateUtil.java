@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Description: DateUtil
+ *  DateUtil
  *
  * @author wupanhua
  * @date 2019/8/6 15:28
@@ -31,7 +31,7 @@ public class DateUtil {
     private static final ThreadLocal<Calendar> safeCalendar = ThreadLocal.withInitial(Calendar::getInstance);
 
     /**
-     * Description:
+     * 
      * <从ThreadLocal中获取一个SimpleDateFormat,线程安全的，一定要在执行一次safeFormat.remove()方法>
      * @author wupanhua
      * @date 15:27 2019/8/8
@@ -64,7 +64,7 @@ public class DateUtil {
     }
 
     /**
-     * Description:
+     * 
      * <将日期格式化成指定的格式>
      * @author wupanhua
      * @date 15:28 2019/8/8
@@ -82,7 +82,7 @@ public class DateUtil {
     }
 
     /**
-     * Description:
+     * 
      * <日期字符串格式化为Date类型>
      * @author wupanhua
      * @date 15:28 2019/8/8
@@ -106,7 +106,7 @@ public class DateUtil {
     }
 
     /**
-     * Description:
+     * 
      * <获取指定日期的年份>
      * @author wupanhua
      * @date 15:28 2019/8/8
@@ -127,7 +127,7 @@ public class DateUtil {
     }
 
     /**
-     * Description:
+     * 
      * <获取月份>
      * @author wupanhua
      * @date 15:29 2019/8/8
@@ -148,7 +148,7 @@ public class DateUtil {
     }
 
     /**
-     * Description:
+     * 
      * <获取两日期间的间隔天数，不包含周六日，相同日期算1天>
      * @param start 1
      * @param end 2
@@ -176,7 +176,7 @@ public class DateUtil {
     }
 
     /**
-     * Description:
+     * 
      * <日期风格>
      * @author wupanhua
      * @date 15:29 2019/8/8
@@ -227,7 +227,7 @@ public class DateUtil {
     }
 
     /**
-     * Description:
+     * 
      * <计算时间差>
      * @author yangliu
      * @date 15:31 2019/8/8

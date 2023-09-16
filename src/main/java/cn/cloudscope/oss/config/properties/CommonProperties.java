@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 
 /**
- * Description: 配置文件父类
+ *  配置文件父类
  *
  * @author wangkp
  * @date 2022/1/24 14:24

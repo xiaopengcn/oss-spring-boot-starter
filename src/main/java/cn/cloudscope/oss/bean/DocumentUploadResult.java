@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * Description: 文档上传接口返回值
+ *  文档上传接口返回值
  *
  * @author wenxiaopeng
  * @date 2021/07/13 16:49

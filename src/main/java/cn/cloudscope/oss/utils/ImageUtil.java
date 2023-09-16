@@ -4,6 +4,7 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.IOUtils;
@@ -23,7 +24,7 @@ import java.util.Collection;
 import static com.drew.metadata.eps.EpsDirectory.TAG_ORIENTATION;
 
 /**
- * Description: 图片工具
+ *  图片工具
  *
  * @author wupanhua
  * @date 2020-03-03 10:47
@@ -36,8 +37,11 @@ import static com.drew.metadata.eps.EpsDirectory.TAG_ORIENTATION;
 @Slf4j
 public class ImageUtil {
 
+    private ImageUtil() {
+    }
+
     /**
-     * Description:
+     * 
      * <判别文件是否为图片>
      * @author wupanhua
      * @date 11:14 2020-03-03
@@ -60,6 +64,13 @@ public class ImageUtil {
         return false;
     }
 
+    /**
+     * 获取图片拍摄角度
+     * @param inputStream   输入图片流
+     * @author wenxiaopeng
+     * @date 2023/9/16 14:57
+     * @return java.lang.Double 图片拍摄角度
+     **/
     public static Double getRotate(BufferedInputStream inputStream) {
         try {
             inputStream.mark(inputStream.available() + 1);
@@ -80,8 +91,7 @@ public class ImageUtil {
         } finally {
             try {
                 inputStream.reset();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ignored) {
             }
         }
         return 0d;
@@ -147,11 +157,9 @@ public class ImageUtil {
             inputStream.mark(inputStream.available() + 1);
             BufferedImage bufferedImage = ImageIO.read(inputStream);
             inputStream.reset();
-//            Double rotate = getRotate((BufferedInputStream) inputStream);
             // 将图片进行缩小处理, 并对文件加入后缀名"-thumbnail"
             Thumbnails.of(bufferedImage)
                     .scale(Math.min(1, 20 * 1024F / inputStream.available()))
-//                    .rotate(rotate)
                     .outputFormat(suffix)
                     .toOutputStream(os);
             return new ByteArrayInputStream(os.toByteArray());
@@ -164,7 +172,7 @@ public class ImageUtil {
     }
 
     /**
-     * Description:
+     * 
      * <添加文件后缀>
      *
      * @param fileName 文件名（可以包含路径）
@@ -193,42 +201,23 @@ public class ImageUtil {
     }
 
     /**
-     * 将图片旋转指定度
-     * @param bufferedimage   原图
-     * @param degree     角度
+     * 旋转图片
+     * @param originImage     待旋转图片
+     * @param degree    旋转角度
      * @author wenxiaopeng
-     * @date 2022/8/2 13:31
+     * @date 2023/9/16 14:53
+     * @return java.awt.image.BufferedImage 旋转后图片
      **/
-//    public static BufferedImage rotateImage(BufferedImage bufferedimage, int degree){
-//        // 得到图片尺寸
-//        int w = bufferedimage.getWidth();
-//        int h = bufferedimage.getHeight();
-//        log.info("原图width:{}, height:{}", w, h);
-//        // 得到图片透明度。
-//        int type= bufferedimage.getColorModel().getTransparency();
-//        BufferedImage img = new BufferedImage(h, w, type);
-//        Graphics2D graphics2d = img.createGraphics();
-//        graphics2d.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-//        // 旋转，degree是整型，度数，比如垂直90度。
-//        graphics2d.rotate(Math.toRadians(degree), w / 2, h / 2);
-//        // 从bufferedimage copy图片至img，0,0是img的坐标。
-//        graphics2d.drawImage(bufferedimage, 0, 0, null);
-//        graphics2d.dispose();
-//        // 返回复制好的图片，原图片依然没有变，没有旋转，下次还可以使用。
-//        log.info("旋转后width:{}, height:{}", img.getWidth(), img.getHeight());
-//        return img;
-//    }
-
-    public static BufferedImage rotateImage(BufferedImage bufferedimage, int degree){
-        int src_width = bufferedimage.getWidth(null);
-        int src_height = bufferedimage.getHeight(null);
-        int type = bufferedimage.getColorModel().getTransparency();
-        Rectangle rect_des = calcRotatedSize(new Rectangle(new Dimension(src_width, src_height)), degree);
-        BufferedImage bi = new BufferedImage(rect_des.width, rect_des.height, type);
+    public static BufferedImage rotateImage(BufferedImage originImage, int degree){
+        int width = originImage.getWidth(null);
+        int height = originImage.getHeight(null);
+        int type = originImage.getColorModel().getTransparency();
+        Rectangle rectangle = calcRotatedSize(new Rectangle(new Dimension(width, height)), degree);
+        BufferedImage bi = new BufferedImage(rectangle.width, rectangle.height, type);
         Graphics2D g2 = bi.createGraphics();
-        g2.translate((rect_des.width - src_width) / 2, (rect_des.height - src_height) / 2);
-        g2.rotate(Math.toRadians(degree), src_width / 2, src_height / 2);
-        g2.drawImage(bufferedimage, 0, 0, null);
+        g2.translate((rectangle.width - width) / 2d, (rectangle.height - height) / 2d);
+        g2.rotate(Math.toRadians(degree), width / 2d, height / 2d);
+        g2.drawImage(originImage, 0, 0, null);
         g2.dispose();
         return bi;
     }
@@ -244,19 +233,19 @@ public class ImageUtil {
         }
         double r = Math.sqrt(src.height * src.height + src.width * src.width) / 2;
         double len = 2 * Math.sin(Math.toRadians(angel) / 2) * r;
-        double angel_alpha = (Math.PI - Math.toRadians(angel)) / 2;
-        double angel_dalta_width = Math.atan((double) src.height / src.width);
-        double angel_dalta_height = Math.atan((double) src.width / src.height);
-        int len_dalta_width = (int) (len * Math.cos(Math.PI - angel_alpha - angel_dalta_width));
-        int len_dalta_height = (int) (len * Math.cos(Math.PI - angel_alpha - angel_dalta_height));
-        int des_width = src.width + len_dalta_width * 2;
-        int des_height = src.height + len_dalta_height * 2;
-        return new Rectangle(new Dimension(des_width, des_height));
+        double angelAlpha = (Math.PI - Math.toRadians(angel)) / 2;
+        double angelDeltaWidth = Math.atan((double) src.height / src.width);
+        double angelDeltaHeight = Math.atan((double) src.width / src.height);
+        int lenDeltaWidth = (int) (len * Math.cos(Math.PI - angelAlpha - angelDeltaWidth));
+        int lenDeltaHeight = (int) (len * Math.cos(Math.PI - angelAlpha - angelDeltaHeight));
+        int desWidth = src.width + lenDeltaWidth * 2;
+        int desHeight = src.height + lenDeltaHeight * 2;
+        return new Rectangle(new Dimension(desWidth, desHeight));
     }
 }
 
 /**
- * Description: 内部类，图片文件类型枚举类
+ *  内部类，图片文件类型枚举类
  *
  * @author zhanglijun
  * @date 2020-04-22 10:47
@@ -266,6 +255,7 @@ public class ImageUtil {
  *      Copyright (c) 2019. All Rights Reserved.
  * </pre>
  */
+@Getter
 enum ImageType {
     /**
      * JPEG
@@ -309,17 +299,10 @@ enum ImageType {
         this.ext = ext;
     }
 
-    public String getExt() {
-        return ext;
-    }
-
-    public String getValue() {
-        return value;
-    }
 }
 
 /**
- * Description: 内部类，文件类型枚举类
+ *  内部类，文件类型枚举类
  *
  * @author wupanhua
  * @date 2020-03-03 10:47
