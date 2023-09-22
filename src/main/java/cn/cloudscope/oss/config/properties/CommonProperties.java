@@ -43,6 +43,11 @@ public class CommonProperties {
     private String bucketName = "basic";
 
     /**
+     * 公开桶名称
+     */
+    private String bucketPublic = "basic-public";
+
+    /**
      * 服务端上传链接
      */
     private String endPoint = "http://127.0.0.1:9000";

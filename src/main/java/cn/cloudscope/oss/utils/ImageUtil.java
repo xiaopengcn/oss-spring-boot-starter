@@ -37,6 +37,8 @@ import static com.drew.metadata.eps.EpsDirectory.TAG_ORIENTATION;
 @Slf4j
 public class ImageUtil {
 
+    private static final String SUFFIX_THUMBNAIL = "-thumbnail";
+
     private ImageUtil() {
     }
 
@@ -183,9 +185,9 @@ public class ImageUtil {
 
         int indexOfDot = fileName.lastIndexOf('.');
         if (indexOfDot != -1) {
-            return fileName.substring(0, indexOfDot) + "-thumbnail" + fileName.substring(indexOfDot);
+            return fileName.substring(0, indexOfDot) + SUFFIX_THUMBNAIL + fileName.substring(indexOfDot);
         } else {
-            return fileName + "-thumbnail";
+            return fileName + SUFFIX_THUMBNAIL;
         }
     }
 

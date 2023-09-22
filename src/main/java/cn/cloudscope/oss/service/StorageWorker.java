@@ -7,6 +7,14 @@ import cn.cloudscope.oss.utils.ImageUtil;
 import cn.cloudscope.oss.utils.PathUtil;
 import cn.cloudscope.oss.utils.VideoUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +26,11 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 文件存储接口
@@ -43,7 +55,22 @@ public interface StorageWorker {
      * @date 2021/07/09 12:07
      * @return 文件上传后的路径
      **/
-    UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail);
+    default UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail) {
+        return upload(inputStream, fileName, folder, thumbnail, false);
+    }
+
+    /**
+     * 上传文件
+     * @param inputStream       文件流
+     * @param fileName          文件名
+     * @param folder            目标文件夹
+     * @param thumbnail         是否生成缩略图
+     * @param isPublic  上传到公开库
+     * @author wenxiaopeng
+     * @date 2021/07/09 12:07
+     * @return 文件上传后的路径
+     **/
+    UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail, boolean isPublic);
 
     /**
      * 上传文件，若是图片的话，生成缩略图
@@ -76,7 +103,7 @@ public interface StorageWorker {
      * @param folder    上传文件夹，可为空，且推荐为空
      * @author wenxiaopeng
      * @date 2022/7/27 14:22
-     * @return cn.net.idso.bean.UploadResult
+     * @return cn.cloudscope.oss.bean.UploadResult
      **/
     default UploadResult upload(File file, String folder) {
         UploadResult result = new UploadResult();
@@ -90,14 +117,16 @@ public interface StorageWorker {
 
     /**
      * 待实现的文件上传接口
-     * @param stream    文件流
-     * @param path      远程路径
+     *
+     * @param stream     文件流
+     * @param bucket
+     * @param path       远程路径
      * @param originName
+     * @return 远程文件路径
      * @author wenxiaopeng
      * @date 2022/7/27 16:17
-     * @return  远程文件路径
-     * */
-    String doUpload(InputStream stream, String path, String originName);
+     */
+    String doUpload(InputStream stream, String bucket, String path, String originName);
 
     /**
      * 待实现的文件上传接口
@@ -108,8 +137,8 @@ public interface StorageWorker {
      * @return  远程文件路径
      * @throws IOException File Not Found
      * */
-    default String doUpload(File file, String path) throws IOException {
-        return doUpload(Files.newInputStream(file.toPath()), path, null);
+    default String doUpload(File file, String bucket, String path) throws IOException {
+        return doUpload(Files.newInputStream(file.toPath()), bucket, path, null);
     }
 
     /**
@@ -118,7 +147,7 @@ public interface StorageWorker {
      * @param folder    上传文件夹，可为空，且推荐为空
      * @author wenxiaopeng
      * @date 2022/7/27 14:22
-     * @return cn.net.idso.bean.UploadResult
+     * @return cn.cloudscope.oss.bean.UploadResult
      **/
     default UploadResult upload(String filePath, String folder) {
         return upload(new File(filePath), folder);
@@ -129,7 +158,7 @@ public interface StorageWorker {
      * @param file  目标文件
      * @author wenxiaopeng
      * @date 2022/7/27 14:22
-     * @return cn.net.idso.bean.UploadResult
+     * @return cn.cloudscope.oss.bean.UploadResult
      **/
     default UploadResult upload(File file) {
         return upload(file, null);
@@ -143,14 +172,14 @@ public interface StorageWorker {
      * @date 2023/2/2 12:19
      * @return java.lang.String
      **/
-    default String buildThumbnail(String path, File file) {
+    default String buildThumbnail(String path, String bucket, File file) {
         try {
             String suffix = FileUtil.getFileSuffix(file.getName());
 
             if(ImageUtil.isImage(file)) {
                 InputStream thumbnailStream = ImageUtil.buildThumbnail(new FileInputStream(file), suffix);
                 if(null != thumbnailStream && thumbnailStream.available() > 0) {
-                    return this.doUpload(thumbnailStream, ImageUtil.appendSuffixHyphenThumbnail(path), null);
+                    return this.doUpload(thumbnailStream, bucket, ImageUtil.appendSuffixHyphenThumbnail(path), null);
                 }
 
             } else {
@@ -158,7 +187,7 @@ public interface StorageWorker {
                     InputStream frameStream = VideoUtil.captureFrame(file, 20);
                     String framePath = StringUtils.substringBeforeLast(path, ".") + ".jpg";
                     if(null != frameStream) {
-                        this.doUpload(frameStream, framePath, null);
+                        this.doUpload(frameStream, bucket, framePath, null);
                         return framePath;
                     }
                 }
@@ -282,4 +311,73 @@ public interface StorageWorker {
     default String generatePath(String fileName) {
         return LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM")) + "/" + PathUtil.generatePath(fileName) + "/" + fileName;
     }
+
+    default UploadResult uploadFromUri(String uri, boolean keepPublic, boolean thumbnail) {
+
+        HttpGet httpGet = new HttpGet(uri);
+        try(CloseableHttpClient httpClient = HttpClients.createDefault();
+            CloseableHttpResponse response = httpClient.execute(httpGet)) {
+            Header[] headers = response.getHeaders(HttpHeaders.CONTENT_TYPE);
+            String fileSuffix = FileUtil.getFileSuffix(StringUtils.substringAfterLast(uri, "/"));
+            if(StringUtils.isBlank(fileSuffix) && headers.length > 0) {
+                fileSuffix = suffixByContentType(headers[0].getValue());
+            }
+            HttpEntity entity = response.getEntity();
+            return this.upload(entity.getContent(), UUID.randomUUID() + "." + fileSuffix, null, thumbnail);
+        } catch (Exception e) {
+            log.error("download from uri: {} error.", uri, e);
+        }
+        return null;
+    }
+
+    default String contentTypeByFileName(String name) {
+        return TYPE_CACHE.getOrDefault(FileUtil.getFileSuffix(name), ContentType.APPLICATION_OCTET_STREAM.getMimeType());
+    }
+
+    default String suffixByContentType(String contentType) {
+        AtomicReference<String> suffix = new AtomicReference<>(null);
+        TYPE_CACHE.forEach((k, v) -> {
+            if(v.equals(contentType)) {
+                suffix.set(k);
+            }
+        });
+        return suffix.get();
+    }
+
+    String getEndpoint();
+
+    String getPublicBucket();
+
+    /**
+     * 获取公开文档访问路径
+     * @param key   文档路径
+     * @author wenxiaopeng
+     * @date 2023/6/16 10:30
+     * @return cn.devcorp.bean.DocumentUrlResult
+     **/
+    default DocumentUrlResult getPublicDocumentUrl(String key) {
+        if(StringUtils.isNotBlank(key)) {
+            String endpoint = getEndpoint();
+            String url = endpoint + "/" + getPublicBucket() + "/" + key;
+            return DocumentUrlResult.builder()
+                    .url(url)
+                    .thumbnail(ImageUtil.appendSuffixHyphenThumbnail(url))
+                    .build();
+        }
+        return DocumentUrlResult.builder().build();
+    }
+
+    Map<String, String> TYPE_CACHE = new HashMap<String, String>(){
+        {
+            put("png", ContentType.IMAGE_PNG.getMimeType());
+            put("jpg", ContentType.IMAGE_JPEG.getMimeType());
+            put("jpeg", ContentType.IMAGE_JPEG.getMimeType());
+            put("gif", ContentType.IMAGE_GIF.getMimeType());
+            put("mp4", "video/mp4");
+            put("markdown", "text/markdown");
+            put("pdf", "application/pdf");
+            put("doc", "application/msword");
+            put("docx", "application/msword");
+        }
+    };
 }

@@ -63,7 +63,7 @@ public class AliyunWorker implements StorageWorker {
      * @author wenxiaopeng
      **/
     @Override
-    public UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail) {
+    public UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail, boolean isPublic) {
         File file = new File(UUIDUtil.buildUuid() + "." + FileUtil.getFileSuffix(fileName));
         try {
             if (inputStream.available() <= 0) {
@@ -77,20 +77,21 @@ public class AliyunWorker implements StorageWorker {
             } else {
                 path = this.generatePath(fileName);
             }
-            this.putObjectCommonFunction(Files.newInputStream(file.toPath()), path);
+            String bucketName = isPublic ? ossProperties.getBucketPublic() : ossProperties.getBucketName();
+            this.putObjectCommonFunction(Files.newInputStream(file.toPath()), bucketName, path);
             UploadResult result = UploadResult.createResult(path, fileName);
             if (thumbnail) {
                 try {
                     String suffix = FileUtil.getFileSuffix(file.getName());
                     if (ImageUtil.isImage(file)) {
                         InputStream thumbnailStream = ImageUtil.buildThumbnail(new FileInputStream(file), suffix);
-                        this.putObjectCommonFunction(thumbnailStream, ImageUtil.appendSuffixHyphenThumbnail(path));
+                        this.putObjectCommonFunction(thumbnailStream, bucketName, ImageUtil.appendSuffixHyphenThumbnail(path));
                     } else {
                         if (VideoUtil.isVideo(file)) {
                             InputStream frameStream = VideoUtil.captureFrame(file, 20);
                             String framePath = StringUtils.substringBeforeLast(path, ".") + ".jpg";
                             if (null != frameStream) {
-                                this.putObjectCommonFunction(frameStream, framePath);
+                                this.putObjectCommonFunction(frameStream, bucketName, framePath);
                             }
                         }
                     }
@@ -111,7 +112,7 @@ public class AliyunWorker implements StorageWorker {
     }
 
     @Override
-    public String doUpload(InputStream stream, String path, String originName) {
+    public String doUpload(InputStream stream, String bucket, String path, String originName) {
         try {
             if (null == stream) {
                 return null;
@@ -201,6 +202,15 @@ public class AliyunWorker implements StorageWorker {
         }
     }
 
+    @Override
+    public String getEndpoint() {
+        return ossProperties.getEndPoint();
+    }
+
+    @Override
+    public String getPublicBucket() {
+        return ossProperties.getBucketPublic();
+    }
 
     /**
      * 根据路径删除文件
@@ -349,7 +359,7 @@ public class AliyunWorker implements StorageWorker {
     }
 
 
-    private void putObjectCommonFunction(InputStream inputStream, String path) throws IOException {
+    private void putObjectCommonFunction(InputStream inputStream, String bucket, String path) throws IOException {
         //创建上传Object的Metadata
         ObjectMetadata metadata = new ObjectMetadata();
         //上传的文件的长度
@@ -363,6 +373,6 @@ public class AliyunWorker implements StorageWorker {
         //文件的MIME，定义文件的类型及网页编码，决定浏览器将以什么形式、什么编码读取文件。如果用户没有指定则根据Key或文件名的扩展名生成，
         //如果没有扩展名则填默认值application/octet-stream
         metadata.setContentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType());
-        ossClient.putObject(ossProperties.getBucketName(), path, inputStream, metadata);
+        ossClient.putObject(bucket, path, inputStream, metadata);
     }
 }

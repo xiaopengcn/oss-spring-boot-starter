@@ -79,7 +79,7 @@ public class MinioWorker implements StorageWorker {
 	 * @date 2021/07/09 12:07
 	 **/
 	@Override
-	public UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail) {
+	public UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail, boolean isPublic) {
 
 		File file = new File(UUIDUtil.buildUuid() + "." + FileUtil.getFileSuffix(fileName));
 		try {
@@ -87,15 +87,16 @@ public class MinioWorker implements StorageWorker {
 				throw new RuntimeException(DocumentReturnCodeEnum.DOCUMENT_EMPTY.getMsg());
 			}
 			file.createNewFile();
+			String bucketName = isPublic ? minioProperties.getBucketPublic() : minioProperties.getBucketName();
 			IOUtils.copyLarge(inputStream, Files.newOutputStream(file.toPath()));
 			UploadResult result = new UploadResult();
 			result.setFileName(fileName);
 			String path = this.ossPath(folder, file.getName());
 			if (thumbnail) {
-				String thumbPath = buildThumbnail(path, file);
+				String thumbPath = buildThumbnail(path, bucketName, file);
 				result.setThumbnail(thumbPath);
 			}
-			String upPath = this.doUpload(Files.newInputStream(file.toPath()), path, fileName);
+			String upPath = this.doUpload(Files.newInputStream(file.toPath()), bucketName, path, fileName);
 			result.setPhyPath(upPath);
 			return result;
 		} catch (Exception e) {
@@ -115,6 +116,7 @@ public class MinioWorker implements StorageWorker {
 	 * 执行上传
 	 *
 	 * @param stream     文件流
+	 * @param bucket
 	 * @param path       远程路径
 	 * @param originName
 	 * @return filepath
@@ -122,7 +124,7 @@ public class MinioWorker implements StorageWorker {
 	 * @date 2022/7/27 16:07
 	 */
 	@Override
-	public String doUpload(InputStream stream, String path, String originName) {
+	public String doUpload(InputStream stream, String bucket, String path, String originName) {
 		if (null != stream) {
 			try {
 				HashMap<String, String> header = Maps.newHashMap();
@@ -131,7 +133,7 @@ public class MinioWorker implements StorageWorker {
 				}
 				log.info("开始上传文件(by stream)，stream size: {}", stream.available());
 				PutObjectArgs args = PutObjectArgs.builder()
-						.bucket(minioProperties.getBucketName())
+						.bucket(bucket)
 						.contentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType())
 						.extraHeaders(header)
 						.object(path)
@@ -151,7 +153,7 @@ public class MinioWorker implements StorageWorker {
 	}
 
 	@Override
-	public String doUpload(File file, String path) {
+	public String doUpload(File file, String bucket, String path) {
 		try {
 			log.info("开始上传文件，stream size(by file): {}", Files.size(file.toPath()));
 			UploadObjectArgs args = UploadObjectArgs.builder().bucket(minioProperties.getBucketName())
@@ -326,6 +328,16 @@ public class MinioWorker implements StorageWorker {
 		String hyphenThumbnail = appendSuffix(path, SUFFIX_THUMBNAIL);
 		String thumbnailUrl = this.crateFileExpireUrl(hyphenThumbnail, expire);
 		return UploadResult.createThumbnailResult(originalImgUrl, thumbnailUrl);
+	}
+
+	@Override
+	public String getEndpoint() {
+		return minioProperties.getEndPoint();
+	}
+
+	@Override
+	public String getPublicBucket() {
+		return minioProperties.getBucketPublic();
 	}
 
 	/**

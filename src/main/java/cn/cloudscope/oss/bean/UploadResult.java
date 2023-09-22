@@ -1,6 +1,7 @@
 package cn.cloudscope.oss.bean;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 上传文件后返回的结果
@@ -53,6 +54,10 @@ public class UploadResult {
         uploadResult.setThumbnail(thumbnail);
 
         return uploadResult;
+    }
+
+    public static boolean ok(UploadResult result) {
+        return null != result && StringUtils.isNotBlank(result.phyPath);
     }
 
     public static final UploadResult EMPTY = new UploadResult();
