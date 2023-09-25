@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <groupId>cn.cloudscope</groupId>
     <artifactId>oss-spring-boot-starter</artifactId>
     
@@ -23,7 +23,7 @@
         <aliyun.oss.version>3.17.1</aliyun.oss.version>
         <javacv.version>1.5.2</javacv.version>
         <ffmpeg.version>4.2.1-1.5.2</ffmpeg.version>
-        
+        <cos.version>5.6.173</cos.version>
         <gpg.keyname>0x08DEAF47</gpg.keyname>
     </properties>
 
@@ -106,6 +106,12 @@
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.qcloud/cos_api -->
+        <dependency>
+            <groupId>com.qcloud</groupId>
+            <artifactId>cos_api</artifactId>
+        </dependency>
+    
     </dependencies>
     
     <dependencyManagement>
@@ -144,6 +150,13 @@
                 <version>${ffmpeg.version}</version>
                 <classifier>linux-x86_64</classifier>
             </dependency>
+            <!-- https://mvnrepository.com/artifact/com.qcloud/cos_api -->
+            <dependency>
+                <groupId>com.qcloud</groupId>
+                <artifactId>cos_api</artifactId>
+                <version>${cos.version}</version>
+            </dependency>
+        
         </dependencies>
     </dependencyManagement>
     

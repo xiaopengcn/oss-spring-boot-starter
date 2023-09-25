@@ -34,19 +34,19 @@ public class UploadResult {
 
     /**
      * 创建一个返回对象
-     * @param pp
-     * @param fn
-     * @return
+     * @param path  文件路径
+     * @param name  文件名
+     * @return 上传返回值
      */
-    public static UploadResult createResult(String pp, String fn) {
-        return new UploadResult(pp, fn);
+    public static UploadResult createResult(String path, String name) {
+        return new UploadResult(path, name);
     }
 
     /**
      * 创建图片返回类型
-     * @param phyPath
-     * @param thumbnail
-     * @return
+     * @param phyPath   原文件路径
+     * @param thumbnail 缩略图路径
+     * @return  含缩略图路径的返回结果
      */
     public static UploadResult createThumbnailResult(String phyPath, String thumbnail) {
         UploadResult uploadResult = new UploadResult();

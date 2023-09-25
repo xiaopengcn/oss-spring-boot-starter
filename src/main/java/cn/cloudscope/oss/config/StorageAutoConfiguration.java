@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @EnableConfigurationProperties(CommonProperties.class)
 @ConditionalOnProperty(prefix = "oss.storage", name = "enabled", havingValue = "true")
-@Import({MinioConfiguration.class, OssConfiguration.class})
+@Import({MinioConfiguration.class, OssConfiguration.class, CosConfiguration.class})
 public class StorageAutoConfiguration {
 
 }

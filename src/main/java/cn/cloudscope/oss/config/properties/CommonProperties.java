@@ -62,6 +62,8 @@ public class CommonProperties {
         minio,
         /** 由阿里云oss提供存储服务 */
         aliyun,
+        /** 腾讯COS */
+        cos,
         ;
     }
 

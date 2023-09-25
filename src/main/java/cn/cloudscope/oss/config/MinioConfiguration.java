@@ -23,7 +23,6 @@ import javax.annotation.Resource;
  *      Copyright (c) 2019. All Rights Reserved.
  * </pre>
  */
-@ConditionalOnMissingBean(StorageWorker.class)
 @Import(MinioProperties.class)
 @ConditionalOnProperty(prefix = "oss.storage", name = "provider", havingValue = "minio" , matchIfMissing = true)
 public class MinioConfiguration {
@@ -32,10 +31,8 @@ public class MinioConfiguration {
     private MinioProperties minioProperties;
 
     @Bean
+    @ConditionalOnMissingBean(StorageWorker.class)
     public StorageWorker minioWorker(){
-
-        MinioClient minioClient = MinioClient.builder().credentials(minioProperties.getAccessKey(),minioProperties.getSecretKey())
-                .endpoint(minioProperties.getEndPoint()).build();
-        return new MinioWorker(minioClient,minioProperties);
+        return new MinioWorker(minioProperties);
     }
 }

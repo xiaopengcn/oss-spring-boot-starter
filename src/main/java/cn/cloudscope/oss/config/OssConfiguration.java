@@ -3,8 +3,6 @@ package cn.cloudscope.oss.config;
 import cn.cloudscope.oss.config.properties.OssProperties;
 import cn.cloudscope.oss.service.StorageWorker;
 import cn.cloudscope.oss.service.impl.AliyunWorker;
-import com.aliyun.oss.OSSClient;
-import com.aliyun.oss.OSSClientBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -23,17 +21,17 @@ import javax.annotation.Resource;
  *      Copyright (c) 2019. All Rights Reserved.
  * </pre>
  */
-@ConditionalOnMissingBean(StorageWorker.class)
 @Import(OssProperties.class)
-@ConditionalOnProperty(prefix = "oss.storage", name = "provider", havingValue = "aliyun" , matchIfMissing = true)
+@ConditionalOnProperty(prefix = "oss.storage", name = "provider", havingValue = "aliyun")
 public class OssConfiguration {
 
     @Resource
     private OssProperties ossProperties;
 
     @Bean
+    @ConditionalOnMissingBean(StorageWorker.class)
     public StorageWorker aliyunOSSWorker(){
-        OSSClient ossClient = (OSSClient) new OSSClientBuilder().build(ossProperties.getEndPoint(),ossProperties.getAccessKey(),ossProperties.getSecretKey());
-        return new AliyunWorker(ossClient,ossProperties);
+
+        return new AliyunWorker(ossProperties);
     }
 }

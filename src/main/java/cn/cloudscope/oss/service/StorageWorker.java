@@ -1,11 +1,15 @@
 package cn.cloudscope.oss.service;
 
+import cn.cloudscope.oss.bean.DocumentReturnCodeEnum;
 import cn.cloudscope.oss.bean.DocumentUrlResult;
 import cn.cloudscope.oss.bean.UploadResult;
 import cn.cloudscope.oss.utils.FileUtil;
 import cn.cloudscope.oss.utils.ImageUtil;
 import cn.cloudscope.oss.utils.PathUtil;
+import cn.cloudscope.oss.utils.UUIDUtil;
 import cn.cloudscope.oss.utils.VideoUtil;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -19,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * 文件存储接口
@@ -70,7 +74,37 @@ public interface StorageWorker {
      * @date 2021/07/09 12:07
      * @return 文件上传后的路径
      **/
-    UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail, boolean isPublic);
+    default UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail, boolean isPublic)  {
+        String path = generatePath(folder, fileName);
+        String bucketName = getBucket(isPublic);
+        UploadResult result = new UploadResult();
+        if(thumbnail) {
+            File temp = new File(UUIDUtil.buildUuid());
+            try(OutputStream outputStream = Files.newOutputStream(temp.toPath())) {
+                if (ImageUtil.isImage(temp)) {
+                    IOUtils.copyLarge(inputStream, outputStream);
+                    String thumbnailUrl = buildThumbnail(path, bucketName, temp);
+                    result.setThumbnail(thumbnailUrl);
+                } else {
+                    if (VideoUtil.isVideo(temp)) {
+                        InputStream frameStream = VideoUtil.captureFrame(temp, 20);
+                        String framePath = StringUtils.substringBeforeLast(path, ".") + ".jpg";
+                        if (null != frameStream) {
+                            doUpload(frameStream, bucketName, framePath, fileName);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("无法生成缩略图: {}", e.getMessage());
+            } finally {
+                FileUtils.deleteQuietly(temp);
+            }
+        }
+        String url = doUpload(inputStream, bucketName, path, fileName);
+        result.setFileName(fileName);
+        result.setPhyPath(url);
+        return result;
+    }
 
     /**
      * 上传文件，若是图片的话，生成缩略图
@@ -107,7 +141,7 @@ public interface StorageWorker {
      **/
     default UploadResult upload(File file, String folder) {
         UploadResult result = new UploadResult();
-        try(InputStream fis = new FileInputStream(file)) {
+        try(InputStream fis = Files.newInputStream(file.toPath())) {
             return upload(fis, file.getName(), folder, true);
         } catch (IOException e) {
             log.error("文件上传失败：{}", e.getMessage());
@@ -139,6 +173,23 @@ public interface StorageWorker {
      * */
     default String doUpload(File file, String bucket, String path) throws IOException {
         return doUpload(Files.newInputStream(file.toPath()), bucket, path, null);
+    }
+
+    /**
+     * 生成远程文件路径
+     *
+     * @param folder   目标文件夹
+     * @param fileName 文件名
+     * @return java.lang.String
+     * @author wenxiaopeng
+     * @date 2022/7/27 16:37
+     **/
+    default String generatePath(String folder, String fileName) {
+        if (StringUtils.isNotBlank(folder)) {
+            return folder.endsWith("/") ? (folder + fileName) : (folder + "/" + fileName);
+        } else {
+            return this.generatePath(fileName);
+        }
     }
 
     /**
@@ -175,9 +226,8 @@ public interface StorageWorker {
     default String buildThumbnail(String path, String bucket, File file) {
         try {
             String suffix = FileUtil.getFileSuffix(file.getName());
-
             if(ImageUtil.isImage(file)) {
-                InputStream thumbnailStream = ImageUtil.buildThumbnail(new FileInputStream(file), suffix);
+                InputStream thumbnailStream = ImageUtil.buildThumbnail(Files.newInputStream(file.toPath()), suffix);
                 if(null != thumbnailStream && thumbnailStream.available() > 0) {
                     return this.doUpload(thumbnailStream, bucket, ImageUtil.appendSuffixHyphenThumbnail(path), null);
                 }
@@ -239,17 +289,49 @@ public interface StorageWorker {
      * @author wangkp
      * @date 13:28 2022/1/25
      **/
-    void download(String key, OutputStream response);
+    default void download(String key, OutputStream response) {
+
+        try(InputStream download = download(key);) {
+            IOUtils.copyLarge(download, response);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * 复制文件
+     *
+     * @param originPath   文件前缀路径
+     * @param deleteOrigin 是否删除原文件
+     * @param isPublic
+     * @return 备份后的文件路径
      * @author WZW
      * @date 14:02 2022/7/5
-     * @param originPath 文件前缀路径
-     * @param deleteOrigin  是否删除原文件
-     * @return 备份后的文件路径
      **/
-    String backupFile(String originPath, boolean deleteOrigin);
+    default String backupFile(String originPath, boolean deleteOrigin, boolean isPublic) {
+        try {
+            String backup = appendSuffix(originPath, SUFFIX_BACKUP);
+            String target = copyObject(originPath, backup, isPublic);
+            if (null != target && deleteOrigin) {
+                this.deleteFile(originPath);
+            }
+            return target;
+        } catch (Exception e) {
+            log.error("复制失败", e);
+            throw new RuntimeException(DocumentReturnCodeEnum.BACKUP_FAILED.getMsg());
+        }
+    }
+
+    /**
+     * 相同桶间文件复制
+     * @param source    源路径
+     * @param target    目标路径
+     * @param isPublic  是否公开库
+     * @author wenxiaopeng
+     * @since 2023/9/25 16:08
+     * @return java.lang.String
+     **/
+    String copyObject(String source, String target, boolean isPublic);
 
     /**
      * 根据路径删除文件
@@ -262,23 +344,14 @@ public interface StorageWorker {
 
 
     /**
-     * 获取一个可访问的文件链接
-     * @param key           文件路径
-     * @param expiresIn     过期时间（秒），默认7天
-     * @author wenxiaopeng
-     * @date 2021/07/09 12:11
-     * @return DocumentUrlResult
-     **/
-    DocumentUrlResult getDocumentUrl(String key, int expiresIn);
-
-
-    /**
      * 上传多个文件
      * @param files 待上传文件列表
      * @return 上传文件成功后的结果集
      * @author wupanhua
      */
-    UploadResult uploadMultipleFile(List<File> files);
+    default List<UploadResult> uploadMultipleFile(List<File> files) {
+        return files.stream().map(this::upload).collect(Collectors.toList());
+    }
 
     /**
      * <创建一个指定有效期的数据访问链接>
@@ -299,7 +372,12 @@ public interface StorageWorker {
      * @param expire 有效时间（s）
      * @return void
      */
-    UploadResult createImgExpireUrl(String path, int expire);
+    default UploadResult createImgExpireUrl(String path, int expire) {
+        String originalImgUrl = this.crateFileExpireUrl(path, expire);
+        String hyphenThumbnail = appendSuffix(path, SUFFIX_THUMBNAIL);
+        String thumbnailUrl = this.crateFileExpireUrl(hyphenThumbnail, expire);
+        return UploadResult.createThumbnailResult(originalImgUrl, thumbnailUrl);
+    }
 
     /**
      * 按规则生成文件路径（年月及文件名hash）
@@ -346,7 +424,11 @@ public interface StorageWorker {
 
     String getEndpoint();
 
-    String getPublicBucket();
+    default String getPublicBucket() {
+        return getBucket(true);
+    }
+
+    String getBucket(boolean isPublic);
 
     /**
      * 获取公开文档访问路径
@@ -380,4 +462,5 @@ public interface StorageWorker {
             put("docx", "application/msword");
         }
     };
+
 }

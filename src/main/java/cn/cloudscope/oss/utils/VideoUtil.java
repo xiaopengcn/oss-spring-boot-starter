@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 /**
  *  视频工具
@@ -77,7 +78,7 @@ public class VideoUtil {
      * @return boolean
      **/
     public static boolean isVideo(File file) {
-        try (InputStream fis = new FileInputStream(file)) {
+        try (InputStream fis = Files.newInputStream(file.toPath())) {
             return isVideo(fis);
         } catch (IOException e) {
             log.error("无法确定传入文件是否为视频文件：{}", e.getMessage());

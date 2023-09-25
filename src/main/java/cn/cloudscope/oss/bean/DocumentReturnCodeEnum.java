@@ -1,6 +1,7 @@
 package cn.cloudscope.oss.bean;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  *  文档服务异常代码
@@ -13,6 +14,7 @@ import lombok.AllArgsConstructor;
  *      Copyright (c) 2021. All Rights Reserved.
  * </pre>
  */
+@Getter
 @AllArgsConstructor
 public enum DocumentReturnCodeEnum {
 
@@ -26,11 +28,4 @@ public enum DocumentReturnCodeEnum {
 
 	private final String msg;
 
-	public Integer getCode() {
-		return code;
-	}
-
-	public String getMsg() {
-		return msg;
-	}
 }
