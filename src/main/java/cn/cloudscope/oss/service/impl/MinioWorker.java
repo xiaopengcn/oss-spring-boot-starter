@@ -1,8 +1,11 @@
 package cn.cloudscope.oss.service.impl;
 
 import cn.cloudscope.oss.bean.DocumentReturnCodeEnum;
+import cn.cloudscope.oss.bean.PreSingUploadParam;
 import cn.cloudscope.oss.config.properties.MinioProperties;
 import cn.cloudscope.oss.service.StorageWorker;
+import cn.cloudscope.oss.utils.FileUtil;
+import cn.cloudscope.oss.utils.UUIDUtil;
 import com.google.common.collect.Maps;
 import io.minio.BucketExistsArgs;
 import io.minio.CopyObjectArgs;
@@ -12,6 +15,7 @@ import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.ObjectWriteResponse;
+import io.minio.PostPolicy;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import io.minio.UploadObjectArgs;
@@ -35,7 +39,11 @@ import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static io.minio.ObjectWriteArgs.MIN_MULTIPART_SIZE;
 
@@ -195,6 +203,40 @@ public class MinioWorker implements StorageWorker {
 		         ServerException e) {
 			log.error("error info ", e);
 		}
+		return null;
+	}
+
+	@Override
+	public Map<String, String> preSignUpload(PreSingUploadParam param) {
+		String bucket = getBucket(param.isPublic());
+		String suffix = FileUtil.getFileSuffix(param.getFilename());
+		String path = generatePath(UUIDUtil.buildUuid() + "." + suffix);
+		// 设置凭证过期时间
+		if(null != param.getExpiresIn()) {
+			param.setExpiresIn(Duration.ofMinutes(10));
+		}
+		ZonedDateTime expirationDate = ZonedDateTime.now().plusMinutes(param.getExpiresIn().toMinutes());
+		// 创建一个凭证
+		PostPolicy policy = new PostPolicy(bucket, expirationDate);
+		policy.addEqualsCondition("key", path);
+		// 5kiB to 50MiB.
+		if(null == param.getSize()) {
+			param.setSize(50 * 1024 * 1024);
+		}
+		policy.addContentLengthRangeCondition(5 * 1024, param.getSize());
+		if(null != param.getContentType()) {
+			policy.addStartsWithCondition("Content-Type", param.getContentType());
+		}
+		policy.addEqualsCondition("success_action_status", String.valueOf(200));
+		try {
+			// 生成凭证并返回
+			final Map<String, String> map = minioClient.getPresignedPostFormData(policy);
+			map.put("key", path);
+			return map;
+		} catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+			log.error("get upload error: {}", e.getMessage());
+		}
+
 		return null;
 	}
 

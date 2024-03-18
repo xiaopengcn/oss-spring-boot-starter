@@ -2,6 +2,7 @@ package cn.cloudscope.oss.service;
 
 import cn.cloudscope.oss.bean.DocumentReturnCodeEnum;
 import cn.cloudscope.oss.bean.DocumentUrlResult;
+import cn.cloudscope.oss.bean.PreSingUploadParam;
 import cn.cloudscope.oss.bean.UploadResult;
 import cn.cloudscope.oss.utils.FileUtil;
 import cn.cloudscope.oss.utils.ImageUtil;
@@ -32,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -75,7 +77,7 @@ public interface StorageWorker {
      * @return 文件上传后的路径
      **/
     default UploadResult upload(InputStream inputStream, String fileName, String folder, boolean thumbnail, boolean isPublic)  {
-        String path = generatePath(folder, fileName);
+        String path = generatePath(folder, UUIDUtil.buildUuid() + "." + FileUtil.getFileSuffix(fileName));
         String bucketName = getBucket(isPublic);
         UploadResult result = new UploadResult();
         if(thumbnail) {
@@ -363,6 +365,16 @@ public interface StorageWorker {
      */
     String crateFileExpireUrl(String path, int expire);
 
+    /**
+     * 预签名上传
+     * @param param  预签名参数
+     * @author wenxiaopeng
+     * @date 2024/3/18 9:38
+     * @return java.util.Map<java.lang.String,java.lang.String>
+     **/
+    default Map<String, String> preSignUpload(PreSingUploadParam param) {
+        return null;
+    }
     /**
      * 
      * <创建一个指定有效期的图片访问链接>
