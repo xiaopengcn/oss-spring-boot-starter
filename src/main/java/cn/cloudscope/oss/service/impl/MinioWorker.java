@@ -96,7 +96,7 @@ public class MinioWorker implements StorageWorker {
 				log.info("开始上传文件(by stream)，stream size: {}", stream.available());
 				PutObjectArgs args = PutObjectArgs.builder()
 						.bucket(bucket)
-						.contentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType())
+						.contentType(TYPE_CACHE.getOrDefault(FileUtil.getFileSuffix(originName), ContentType.APPLICATION_OCTET_STREAM.getMimeType()))
 						.extraHeaders(header)
 						.object(path)
 						.stream(stream, -1, MIN_MULTIPART_SIZE * 10)
