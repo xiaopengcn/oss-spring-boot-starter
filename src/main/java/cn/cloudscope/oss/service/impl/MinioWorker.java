@@ -89,15 +89,15 @@ public class MinioWorker implements StorageWorker {
 	public String doUpload(InputStream stream, String bucket, String path, String originName) {
 		if (null != stream) {
 			try {
-				HashMap<String, String> header = Maps.newHashMap();
-				if (StringUtils.isNotBlank(originName)) {
-					header.put("Content-Disposition", "attachment;filename=" + originName);
-				}
+//				HashMap<String, String> header = Maps.newHashMap();
+//				if (StringUtils.isNotBlank(originName)) {
+////					header.put("Content-Disposition", "attachment;filename=" + originName);
+//				}
 				log.info("开始上传文件(by stream)，stream size: {}", stream.available());
 				PutObjectArgs args = PutObjectArgs.builder()
 						.bucket(bucket)
 						.contentType(TYPE_CACHE.getOrDefault(FileUtil.getFileSuffix(originName), ContentType.APPLICATION_OCTET_STREAM.getMimeType()))
-						.extraHeaders(header)
+//						.extraHeaders(header)
 						.object(path)
 						.stream(stream, -1, MIN_MULTIPART_SIZE * 10)
 						.build();
