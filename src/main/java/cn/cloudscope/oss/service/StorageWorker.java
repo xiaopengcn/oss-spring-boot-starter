@@ -380,6 +380,25 @@ public interface StorageWorker {
     }
 
     /**
+     *
+     * <创建一个指定有效期的图片访问链接>
+     * @author wupanhua
+     * @date 11:30 2020-03-03
+     * @param path oss存储路径
+     * @param expire 有效时间（s）
+     * @return void
+     */
+    default DocumentUrlResult createImgExpireUrl(String path, int expire, String bucket) {
+        if(StringUtils.isNotBlank(bucket) && getPublicBucket().equals(bucket)) {
+            return getPublicDocumentUrl(path);
+        }
+        String originalImgUrl = this.crateFileExpireUrl(path, expire);
+        String hyphenThumbnail = appendSuffix(path, SUFFIX_THUMBNAIL);
+        String thumbnailUrl = this.crateFileExpireUrl(hyphenThumbnail, expire);
+        return DocumentUrlResult.builder().url(originalImgUrl).thumbnail(thumbnailUrl).expiresIn(expire).build();
+    }
+
+    /**
      * 按规则生成文件路径（年月及文件名hash）
      * @param fileName  文件名
      * @author wenxiaopeng
