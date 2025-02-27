@@ -80,31 +80,19 @@ public interface StorageWorker {
         String path = generatePath(folder, UUIDUtil.buildUuid() + "." + FileUtil.getFileSuffix(fileName));
         String bucketName = getBucket(isPublic);
         UploadResult result = new UploadResult();
-        if(thumbnail) {
-            File temp = new File(UUIDUtil.buildUuid());
-            try(OutputStream outputStream = Files.newOutputStream(temp.toPath())) {
-                if (ImageUtil.isImage(temp)) {
-                    IOUtils.copyLarge(inputStream, outputStream);
-                    String thumbnailUrl = buildThumbnail(path, bucketName, temp);
-                    result.setThumbnail(thumbnailUrl);
-                } else {
-                    if (VideoUtil.isVideo(temp)) {
-                        InputStream frameStream = VideoUtil.captureFrame(temp, 20);
-                        String framePath = StringUtils.substringBeforeLast(path, ".") + ".jpg";
-                        if (null != frameStream) {
-                            doUpload(frameStream, bucketName, framePath, fileName);
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.error("无法生成缩略图: {}", e.getMessage());
-            } finally {
+        File temp = new File(UUIDUtil.buildUuid() + "." + FileUtil.getFileSuffix(fileName));
+        try(OutputStream outputStream = Files.newOutputStream(temp.toPath())) {
+            IOUtils.copyLarge(inputStream, outputStream);
+            String thumbnailUrl = buildThumbnail(path, bucketName, temp);
+            result.setThumbnail(thumbnailUrl);
+            String url = doUpload(Files.newInputStream(temp.toPath()), bucketName, path, fileName);
+            result.setFileName(fileName);
+            result.setPhyPath(url);
+        } catch (Exception e) {
+            log.error("无法生成缩略图: {}", e.getMessage());
+        } finally {
                 FileUtils.deleteQuietly(temp);
-            }
         }
-        String url = doUpload(inputStream, bucketName, path, fileName);
-        result.setFileName(fileName);
-        result.setPhyPath(url);
         return result;
     }
 
@@ -229,7 +217,7 @@ public interface StorageWorker {
         try {
             String suffix = FileUtil.getFileSuffix(file.getName());
             if(ImageUtil.isImage(file)) {
-                InputStream thumbnailStream = ImageUtil.buildThumbnail(Files.newInputStream(file.toPath()), suffix);
+                InputStream thumbnailStream = ImageUtil.buildThumbnail(file, suffix);
                 if(null != thumbnailStream && thumbnailStream.available() > 0) {
                     return this.doUpload(thumbnailStream, bucket, ImageUtil.appendSuffixHyphenThumbnail(path), null);
                 }

@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
+import org.apache.tika.mime.MediaType;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -40,30 +42,6 @@ public class ImageUtil {
     private static final String SUFFIX_THUMBNAIL = "-thumbnail";
 
     private ImageUtil() {
-    }
-
-    /**
-     * 
-     * <判别文件是否为图片>
-     * @author wupanhua
-     * @date 11:14 2020-03-03
-     * @param srcFilePath 文件对象
-     */
-    public static boolean isImage(File srcFilePath) {
-        String signature = FileUtil.getFileSignature(srcFilePath);
-        return isImageSignature(signature);
-    }
-
-    private static boolean isImageSignature(String signature) {
-        if(null != signature) {
-            ImageType[] imageTypes = ImageType.values();
-            for (ImageType imageType : imageTypes) {
-                if (signature.startsWith(imageType.getValue())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -145,30 +123,23 @@ public class ImageUtil {
 
     /**
      * 获取文件缩略图
-     * @param inputStream 原图片流
+     * @param file 原图片
      * @author wenxiaopeng
      * @date 2021/10/09 17:29
      * @return java.io.InputStream
      **/
-    public static InputStream buildThumbnail(InputStream inputStream, String suffix) {
+    public static InputStream buildThumbnail(File file, String suffix) {
 
-        if(!inputStream.markSupported()) {
-            inputStream = new BufferedInputStream(inputStream);
-        }
         try(ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            inputStream.mark(inputStream.available() + 1);
-            BufferedImage bufferedImage = ImageIO.read(inputStream);
-            inputStream.reset();
+            BufferedImage bufferedImage = ImageIO.read(file);
             // 将图片进行缩小处理, 并对文件加入后缀名"-thumbnail"
             Thumbnails.of(bufferedImage)
-                    .scale(Math.min(1, 20 * 1024F / inputStream.available()))
+                    .scale(Math.min(1, 20 * 1024F / file.length()))
                     .outputFormat(suffix)
                     .toOutputStream(os);
             return new ByteArrayInputStream(os.toByteArray());
         } catch (Exception e) {
-            log.error("创建缩略图异常: {}", e.getMessage());
-        } finally {
-            IOUtils.closeQuietly(inputStream);
+            log.error("创建缩略图异常: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -193,13 +164,24 @@ public class ImageUtil {
 
     /**
      * 判断文件流是否是图片
-     * @param bis   bis
+     * @param file   file
      * @author wenxiaopeng
      * @date 2022/7/27 15:29
      * @return boolean
      **/
-    public static boolean isImage(InputStream bis) {
-        return isImageSignature(FileUtil.getFileSignature(bis));
+    public static boolean isImage(File file) {
+        Tika tika = new Tika();
+        // 检测内容类型
+        String detectedType;
+        try {
+            detectedType = tika.detect(file);
+        } catch (Exception e) {
+            log.error("detect image error: {}", e.getMessage());
+            return false;
+        }
+        // 判断是否为图片
+        MediaType mediaType = MediaType.parse(detectedType);
+        return mediaType.getType().equals("image");
     }
 
     /**

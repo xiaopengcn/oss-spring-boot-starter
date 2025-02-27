@@ -4,6 +4,7 @@ import cn.cloudscope.oss.bean.DocumentReturnCodeEnum;
 import cn.cloudscope.oss.bean.UploadResult;
 import cn.cloudscope.oss.config.properties.OssProperties;
 import cn.cloudscope.oss.service.StorageWorker;
+import cn.cloudscope.oss.utils.ImageUtil;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.CopyObjectRequest;
@@ -19,8 +20,12 @@ import org.apache.http.entity.ContentType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 
 /**
