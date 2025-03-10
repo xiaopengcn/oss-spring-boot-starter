@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
     <groupId>cn.cloudscope</groupId>
     <artifactId>oss-spring-boot-starter</artifactId>
     
@@ -24,7 +24,7 @@
         <javacv.version>1.5.2</javacv.version>
         <ffmpeg.version>4.2.1-1.5.2</ffmpeg.version>
         <cos.version>5.6.173</cos.version>
-        <gpg.keyname>0xEAFA518A</gpg.keyname>
+        <gpg.keyname>C6C54FC83C0BD1F6A1407BB321552F4ED42D3321</gpg.keyname>
     </properties>
 
     <dependencies>

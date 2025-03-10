@@ -54,7 +54,7 @@ public class AliyunWorker implements StorageWorker {
             metadata.setCacheControl("no-cache");
             metadata.setHeader("Pragma", "no-cache");
             metadata.setContentEncoding("utf-8");
-            metadata.setContentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType());
+//            metadata.setContentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType());
             if (StringUtils.isNotBlank(originName)) {
                 metadata.setContentDisposition("attachment;filename=" + originName);
             }
