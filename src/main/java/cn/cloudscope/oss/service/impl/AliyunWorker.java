@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,13 +57,13 @@ public class AliyunWorker implements StorageWorker {
             metadata.setContentEncoding("utf-8");
 //            metadata.setContentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType());
             if (StringUtils.isNotBlank(originName)) {
-                metadata.setContentDisposition("attachment;filename=" + originName);
+                metadata.setContentDisposition("attachment;filename=" + URLEncoder.encode(originName, "utf-8"));
             }
             PutObjectResult putObjectResult = ossClient.putObject(ossProperties.getBucketName(), path, stream, metadata);
             log.info("文件上传完成: {}", putObjectResult.getETag());
             return path;
         } catch (Exception e) {
-            log.error("上传失败：" + e, e);
+            log.error("上传失败：{}", e.getMessage(), e);
             throw new RuntimeException(DocumentReturnCodeEnum.SERVER_UNAVAILABLE.getMsg());
         } finally {
             IOUtils.closeQuietly(stream);
