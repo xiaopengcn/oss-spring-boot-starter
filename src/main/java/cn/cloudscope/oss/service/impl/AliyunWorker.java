@@ -57,7 +57,7 @@ public class AliyunWorker implements StorageWorker {
             metadata.setContentEncoding("utf-8");
 //            metadata.setContentType(ContentType.APPLICATION_OCTET_STREAM.getMimeType());
             if (StringUtils.isNotBlank(originName)) {
-                metadata.setContentDisposition("attachment;filename=" + URLEncoder.encode(originName, "utf-8"));
+                metadata.setHeader("filename", URLEncoder.encode(originName, "utf-8"));
             }
             PutObjectResult putObjectResult = ossClient.putObject(ossProperties.getBucketName(), path, stream, metadata);
             log.info("文件上传完成: {}", putObjectResult.getETag());
