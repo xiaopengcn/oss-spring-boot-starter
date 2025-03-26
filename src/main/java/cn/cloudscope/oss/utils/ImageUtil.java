@@ -134,7 +134,7 @@ public class ImageUtil {
             BufferedImage bufferedImage = ImageIO.read(file);
             // 将图片进行缩小处理, 并对文件加入后缀名"-thumbnail"
             Thumbnails.of(bufferedImage)
-                    .scale(Math.min(1, 20 * 1024F / file.length()))
+                    .scale(Math.min(1, 200 * 1024F / file.length()))
                     .outputFormat(suffix)
                     .toOutputStream(os);
             return new ByteArrayInputStream(os.toByteArray());
